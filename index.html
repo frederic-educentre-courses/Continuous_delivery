@@ -1,41 +1,113 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<link rel="stylesheet" href="dist/reset.css">
-		<link rel="stylesheet" href="dist/reveal.css">
-		<link rel="stylesheet" href="dist/theme/black.css">
+	<title>Continuous Delivery pipeline avec Jenkins</title>
 
-		<!-- Theme used for syntax highlighted code -->
-		<link rel="stylesheet" href="plugin/highlight/monokai.css">
-	</head>
-	<body>
-		<div class="reveal">
-			<div class="slides">
-				<section>Slide 1</section>
-				<section data-visibility="hidden">Slide X</section>
-				<section>Slide 2</section>
-			</div>
+	<link rel="stylesheet" href="dist/reset.css">
+	<link rel="stylesheet" href="dist/reveal.css">
+	<link rel="stylesheet" href="dist/theme/black.css">
+
+	<!-- Theme used for syntax highlighted code -->
+	<link rel="stylesheet" href="plugin/highlight/monokai.css">
+</head>
+
+<body>
+	<div class="reveal">
+		<div class="slides">
+			<section>Continuous Delivery / Livraison continue</section>
+			<section>
+				<h2>Qu'est-ce que la CD (Continuous Delivery) ?</h2>
+				<p>La CD (Continuous Delivery) est une pratique qui permet de préparer le logiciel pour la livraison.
+				</p>
+				<p>Exemple : Créer une image docker et la pousser sur un registry.</p>
+			</section>
+			<section>
+				<h2>Dockerfile</h2>
+				<p>Un Dockerfile est un fichier qui contient des instructions pour construire une image docker.</p>
+			</section>
+			<section>
+				<h2>Exemple de Dockerfile</h2>
+				<pre>
+					<code>
+FROM node:16-alpine
+WORKDIR /app
+COPY . /app
+RUN npm install
+CMD ["npm", "start"]
+					</code>
+				</pre>
+			</section>
+			<section>
+				<h2>Créer une image Docker à partir d'un Dockerfile</h2>
+				<pre>
+					<code>
+docker build -t my-image .
+					</code>
+				</pre>
+			</section>
+			<section>
+				<h2>Pousser une image Docker sur un registry</h2>
+				<pre>
+					<code>
+docker login
+docker tag my-image username/my-image:tag
+docker push username/my-image:tag
+					</code>
+				</pre>
+			</section>
+			<section>
+				<h2>Exemple de pipeline CD</h2>
+				<pre>
+					<code>
+pipeline {
+	agent {
+		label 'agent name'
+	}
+
+	environment {
+		REGISTRY = 'username'
+		TAG = 'tag'
+		DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
+	}
+
+	stages {
+		//...
+		stage('Continuous Delivery') {
+			steps {
+				sh 'docker build -t my-image .'
+				sh 'docker tag my-image $REGISTRY/my-image:$TAG'
+				sh 'docker login -u $REGISTRY -p $DOCKER_HUB_CREDENTIALS'
+				sh 'docker push $REGISTRY/my-image:$TAG'
+			}
+		}
+		//...
+	}
+}
+					</code>
+				</pre>
+			</section>
 		</div>
+	</div>
 
-		<script src="dist/reveal.js"></script>
-		<script src="plugin/notes/notes.js"></script>
-		<script src="plugin/markdown/markdown.js"></script>
-		<script src="plugin/highlight/highlight.js"></script>
-		<script>
-			// More info about initialization & config:
-			// - https://revealjs.com/initialization/
-			// - https://revealjs.com/config/
-			Reveal.initialize({
-				hash: true,
+	<script src="dist/reveal.js"></script>
+	<script src="plugin/notes/notes.js"></script>
+	<script src="plugin/markdown/markdown.js"></script>
+	<script src="plugin/highlight/highlight.js"></script>
+	<script>
+		// More info about initialization & config:
+		// - https://revealjs.com/initialization/
+		// - https://revealjs.com/config/
+		Reveal.initialize({
+			hash: true,
 
-				// Learn about plugins: https://revealjs.com/plugins/
-				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
-			});
-		</script>
-	</body>
+			// Learn about plugins: https://revealjs.com/plugins/
+			plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+		});
+	</script>
+</body>
+
 </html>
